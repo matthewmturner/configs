@@ -13,6 +13,9 @@ Plug 'itchyny/lightline.vim'
 Plug 'machakann/vim-highlightedyank'
 " Plug 'christoomey/vim-tmux-navigator'
 Plug 'vim-test/vim-test'
+Plug 'airblade/vim-gitgutter'
+Plug 'preservim/tagbar'
+Plug 'rrethy/vim-hexokinase', { 'do': 'make hexokinase' }
 
 " Semantic language support
 Plug 'neovim/nvim-lspconfig'
@@ -32,6 +35,7 @@ Plug 'junegunn/fzf.vim'
 " Plug 'mg979/vim-visual-multi', {'branch': 'master'}
 Plug 'tpope/vim-commentary'
 Plug 'tpope/vim-surround'
+Plug 'jiangmiao/auto-pairs'
 
 " Syntactic language support Plug 'cespare/vim-toml'
 Plug 'stephpy/vim-yaml'
@@ -39,7 +43,11 @@ Plug 'rust-lang/rust.vim'
 Plug 'plasticboy/vim-markdown'
 Plug 'cespare/vim-toml'
 Plug 'simrat39/rust-tools.nvim'
-" Plug 'numirias/semshi', {'do': ':UpdateRemotePlugins' }
+Plug 'numirias/semshi', {'do': ':UpdateRemotePlugins' }
+
+" Formatters
+
+Plug 'psf/black', { 'branch': 'stable' }
 
 " Optional Deps for Rust-Tools
 Plug 'nvim-lua/popup.nvim'
@@ -61,6 +69,7 @@ endif
 " # Editor Settings
 " =====================================
 set encoding=utf-8
+set mouse=a
 
 set showmode showcmd
 set number
@@ -131,11 +140,15 @@ nnoremap <silent> t<C-s> :TestSuite<CR>
 nnoremap <silent> t<C-l> :TestLast<CR>
 nnoremap <silent> t<C-g> :TestVisit<CR>
 
+" Tagbar
+nmap <leader>t :TagbarToggle<CR>
+"
 " =====================================
 " # GUI
 " =====================================
 let g:lightline = { 'colorscheme': 'dracula' }
 let g:coq_settings = { 'auto_start': 'shut-up' }
+let g:tagbar_ctags_bin = '/opt/homebrew/Cellar/universal-ctags/HEAD-0673dac/bin/ctags'
 
 " LSP configuration
 lua << EOF
@@ -189,6 +202,8 @@ set updatetime=300
 if (has("termguicolors"))
   set termguicolors
 endif
+" Set file update time
+set updatetime=100
 
 " Splits
 set splitright
@@ -200,8 +215,12 @@ set t_te=""
 " =====================================
 " # Autocommands 
 " =====================================
-
+filetype on
+" Rust
 au Filetype rust set colorcolumn=100
+
+" Python
+autocmd BufWritePre *.py execute ':Black'
 
 " Type hints on showing file or buf - only on nightly
 " autocmd BufEnter,BufWinEnter,TabEnter *.rs :lua require'lsp_extensions'.inlay_hints{}

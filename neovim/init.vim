@@ -32,7 +32,6 @@ Plug 'junegunn/fzf' , { 'dir': '~/.fzf','do': './install --all' }
 Plug 'junegunn/fzf.vim'
 
 " Editor enhancements
-" Plug 'mg979/vim-visual-multi', {'branch': 'master'}
 Plug 'tpope/vim-commentary'
 Plug 'tpope/vim-surround'
 Plug 'jiangmiao/auto-pairs'
@@ -43,10 +42,10 @@ Plug 'rust-lang/rust.vim'
 Plug 'plasticboy/vim-markdown'
 Plug 'cespare/vim-toml'
 Plug 'simrat39/rust-tools.nvim'
-Plug 'numirias/semshi', {'do': ':UpdateRemotePlugins' }
+Plug 'vim-python/python-syntax'
+Plug 'elzr/vim-json'
 
 " Formatters
-
 Plug 'psf/black', { 'branch': 'stable' }
 
 " Optional Deps for Rust-Tools
@@ -55,7 +54,7 @@ Plug 'nvim-lua/plenary.nvim'
 Plug 'nvim-telescope/telescope.nvim'
 
 " Theme
-Plug 'arcticicestudio/nord-vim'
+" Plug 'arcticicestudio/nord-vim'
 Plug 'dracula/vim', {'as': 'dracula'}
 
 call plug#end()
@@ -102,9 +101,9 @@ inoremap <right> <nop>
 
 " Remap ESC to home row
 inoremap kj <esc>
-" nnoremap kj <esc>
-" cnoremap kj <esc> 
-" vnoremap kj <esc>
+nnoremap kj <esc>
+cnoremap kj <esc> 
+vnoremap kj <esc>
 
 " Jump to start and end of line using how row keys
 map H ^
@@ -142,17 +141,41 @@ nnoremap <silent> t<C-g> :TestVisit<CR>
 
 " Tagbar
 nmap <leader>t :TagbarToggle<CR>
-"
+
+"JSON format current buffer
+nmap <leader>fj :%!jq .<CR>
+
 " =====================================
 " # GUI
 " =====================================
 let g:lightline = { 'colorscheme': 'dracula' }
 let g:coq_settings = { 'auto_start': 'shut-up' }
 let g:tagbar_ctags_bin = '/opt/homebrew/Cellar/universal-ctags/HEAD-0673dac/bin/ctags'
+let g:python_highlight_all = 1
+
+if has('nvim') && !empty($CONDA_PREFIX)
+  let g:python3_host_prog = $CONDA_PREFIX . '/bin/python'
+endif
 
 " LSP configuration
 lua << EOF
 local nvim_lsp = require('lspconfig')
+
+local configs = require('lspconfig/configs')
+local util = require('lspconfig/util')
+local path = util.path
+
+-- Still need to figure this out
+-- local function get_python_path(workspace)
+  -- Use activated conda env.
+  -- if vim.env.CONDA_PREFIX then
+    -- return path.join(vim.env.VIRTUAL_ENV, 'bin', 'python')
+  -- end
+
+  -- Fallback to system Python.
+  -- return exepath('python3') or exepath('python') or 'python'
+-- end
+
 -- Use an on_attach function to only map the following keys
 -- after the language server attaches to the current buffer
 local on_attach = function(client, bufnr)
@@ -186,8 +209,14 @@ local on_attach = function(client, bufnr)
 
 end
 require('rust-tools').setup({server = { on_attach = on_attach }})
-
 require('coq')
+nvim_lsp.pyright.setup({
+  on_attach = on_attach,
+  before_init = function(_, config)
+    config.settings.python.pythonPath = '/Users/matth/opt/miniconda3/envs/metaversd/bin/python'
+    -- config.settings.python.pythonPath = get_python_path(config.root_dir)
+  end
+})
 
 EOF
 
@@ -226,4 +255,7 @@ autocmd BufWritePre *.py execute ':Black'
 " autocmd BufEnter,BufWinEnter,TabEnter *.rs :lua require'lsp_extensions'.inlay_hints{}
 
 set t_Co=256
+
+" Scheme
+syntax enable
 colorscheme dracula
